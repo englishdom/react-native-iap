@@ -20,7 +20,7 @@ const itemSkus = Platform.select({
     'com.cooni.point1000', 'com.cooni.point5000', // dooboolab
   ],
   android: [
-    'test.sub1', // subscription
+    'android.test.purchased',
   ],
 });
 
@@ -47,6 +47,7 @@ class Page extends Component {
   async componentDidMount() {
     try {
       const result = await RNIap.initConnection();
+      await RNIap.consumeAllItems();
       console.log('result', result);
     } catch (err) {
       console.warn(err.code, err.message);
@@ -90,7 +91,7 @@ class Page extends Component {
       this.setState({ receipt: purchase.transactionReceipt }, () => this.goToNext());
     } catch (err) {
       console.warn(err.code, err.message);
-      const subscription = RNIap.addAdditionalSuccessPurchaseListenerIOS(async (purchase) => {
+      const subscription = RNIap.addAdditionalSuccessPurchaseListenerIOS(async(purchase) => {
         this.setState({ receipt: purchase.transactionReceipt }, () => this.goToNext());
         subscription.remove();
       });
@@ -141,7 +142,7 @@ class Page extends Component {
           >
             <View style={{ height: 50 }} />
             <NativeButton
-              onPress={this.getItems}
+              onPress={this.getAvailablePurchases}
               activeOpacity={0.5}
               style={styles.btn}
               textStyle={styles.txt}
@@ -167,7 +168,9 @@ class Page extends Component {
                       marginTop: 20,
                       fontSize: 12,
                       color: 'black',
+                      minHeight: 100,
                       alignSelf: 'center',
+                      paddingHorizontal: 20,
                     }} >{JSON.stringify(product)}</Text>
                     <NativeButton
                       onPress={() => this.buyItem(product.productId)}
